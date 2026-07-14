@@ -33,6 +33,20 @@ def _carica_secrets() -> dict:
         return tomllib.load(f)
 
 
+def _chat_id_autorizzati_da_secrets(secrets: dict) -> set:
+    """Chat autorizzate a chiedere /report: TELEGRAM_CHAT_ID (una, storica) più l'eventuale
+    TELEGRAM_CHAT_IDS (elenco aggiuntivo, separato da virgole) per autorizzare altri account/
+    gruppi senza perdere quello già configurato."""
+    autorizzati = set()
+    if secrets.get("TELEGRAM_CHAT_ID"):
+        autorizzati.add(str(secrets["TELEGRAM_CHAT_ID"]).strip())
+    for cid in str(secrets.get("TELEGRAM_CHAT_IDS", "")).split(","):
+        cid = cid.strip()
+        if cid:
+            autorizzati.add(cid)
+    return autorizzati
+
+
 def _genera_report_oggi_sync(username: str, password: str):
     """Esegue la pipeline live (sincrona, Playwright) e restituisce (pdf_bytes, n_oggi,
     n_carryover). pdf_bytes è None se non ci sono eventi. Eseguita in un thread separato
@@ -58,10 +72,17 @@ def _genera_report_oggi_sync(username: str, password: str):
 async def comando_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     if chat_id not in context.bot_data["chat_id_autorizzati"]:
-        await update.message.reply_text("Non sei autorizzato a richiedere report da questo bot.")
+        await update.message.reply_text(
+            f"⛔ Non sei autorizzato a richiedere report da questo bot.\n"
+            f"Il tuo chat id è {chat_id}: se deve essere autorizzato, aggiungilo a "
+            f"TELEGRAM_CHAT_IDS in .streamlit/secrets.toml."
+        )
         return
 
-    await update.message.reply_text("🤖 Generazione del report in corso, un momento...")
+    await update.message.reply_text(
+        "🤖 Generazione del report in corso (di solito 30-60 secondi: mi collego al portale "
+        "SIGER e scarico i dati)..."
+    )
     secrets = context.bot_data["secrets"]
     try:
         pdf_bytes, n_oggi, n_carryover = await asyncio.to_thread(
@@ -89,20 +110,40 @@ async def comando_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+_TESTO_GUIDA = (
+    "👋 Ciao! Sono il bot del sistema di report incendi SIGER — Protezione Civile "
+    "Regione Basilicata.\n\n"
+    "📋 *Comandi disponibili*\n"
+    "/report — genera e invia il PDF con gli incendi gestiti dalla sala operativa oggi: "
+    "elenco eventi, tipologia, livello di rischio, mezzi impiegati, e gli incendi aperti nei "
+    "giorni precedenti ancora in corso.\n"
+    "/help — mostra di nuovo questa guida.\n\n"
+    "⏱️ *Tempistiche*: la generazione richiede circa 30-60 secondi (login al portale SIGER, "
+    "scaricamento ed elaborazione dei dati) — dopo aver scritto /report ricevi subito una "
+    "conferma di avvio, poi il PDF quando è pronto.\n\n"
+    "🔒 *Accesso*: solo le chat autorizzate possono richiedere report (vedi "
+    "TELEGRAM_CHAT_ID/TELEGRAM_CHAT_IDS nella configurazione). Se scrivi /report e non sei "
+    "autorizzato, il bot ti mostra il tuo chat id da comunicare a chi gestisce il tool."
+)
+
+
 async def comando_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Ciao! Scrivi /report per generare e ricevere il report PDF degli incendi di oggi."
-    )
+    await update.message.reply_text(_TESTO_GUIDA, parse_mode="Markdown")
+
+
+async def comando_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(_TESTO_GUIDA, parse_mode="Markdown")
 
 
 def _costruisci_app() -> Application:
     secrets = _carica_secrets()
-    chat_id_autorizzati = {str(secrets["TELEGRAM_CHAT_ID"])}
+    chat_id_autorizzati = _chat_id_autorizzati_da_secrets(secrets)
 
     app = Application.builder().token(secrets["TELEGRAM_BOT_TOKEN"]).build()
     app.bot_data["secrets"] = secrets
     app.bot_data["chat_id_autorizzati"] = chat_id_autorizzati
     app.add_handler(CommandHandler("start", comando_start))
+    app.add_handler(CommandHandler("help", comando_help))
     app.add_handler(CommandHandler("report", comando_report))
     return app
 
