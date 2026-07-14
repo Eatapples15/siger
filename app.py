@@ -3,6 +3,7 @@ import base64
 from datetime import datetime, timedelta
 
 import streamlit as st
+import streamlit.components.v1 as components
 import telegram
 
 import siger_bot
@@ -14,15 +15,18 @@ import siger_storico
 GIORNI_LOOKBACK_CARRYOVER = 7  # per intercettare incendi aperti nei giorni precedenti e ancora in corso
 
 
-def mostra_pdf(pdf_bytes):
-    # <embed> invece di <iframe>: su Streamlit Community Cloud l'app gira già dentro un
-    # iframe della piattaforma, e un secondo iframe annidato per l'anteprima del PDF va in
-    # conflitto col suo sandboxing in alcuni browser (l'anteprima resta bianca). <embed> è
-    # pensato per contenuti di plugin come i PDF ed è più tollerante in questo scenario.
+def scarica_automaticamente(pdf_bytes: bytes, filename: str):
+    """Avvia il download del PDF senza bisogno di un click aggiuntivo: un link nascosto con
+    'download' viene cliccato via JS. st.components.v1.html esegue davvero lo script (a
+    differenza di st.markdown, che inserisce l'HTML senza eseguire i <script> al suo interno).
+    Niente più anteprima incorporata: su Streamlit Cloud un iframe annidato per il PDF va in
+    conflitto col sandboxing dell'iframe della piattaforma stessa (anteprima bianca)."""
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    pdf_display = f'<embed src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf">'
-    st.markdown(pdf_display, unsafe_allow_html=True)
-    st.caption("Se l'anteprima sopra resta vuota, usa il pulsante di download qui sotto: il PDF è comunque pronto.")
+    html = f"""
+    <a id="link" href="data:application/pdf;base64,{base64_pdf}" download="{filename}"></a>
+    <script>document.getElementById('link').click();</script>
+    """
+    components.html(html, height=0)
 
 
 async def _invia_documento_telegram(bot_token, chat_id, pdf_bytes, filename, caption):
@@ -120,9 +124,10 @@ if col_giorno.button("🚀 Genera report di oggi", type="primary"):
             st.warning("Nessun evento aperto oggi (potrebbero comunque esserci incendi dei giorni precedenti ancora in corso, vedi PDF).")
         pdf_bytes = siger_report.genera_pdf_giornaliero(eventi_oggi, oggi, siger_username, eventi_carryover=carryover)
         st.success(f"✅ Report generato: {len(eventi_oggi)} eventi di oggi, {len(carryover)} ancora in corso dai giorni precedenti.")
-        mostra_pdf(pdf_bytes)
+        nome_file = f"Report_Siger_{oggi.strftime('%Y%m%d')}.pdf"
+        scarica_automaticamente(pdf_bytes, nome_file)
         st.download_button(
-            label="⬇️ Scarica il PDF",
+            label="⬇️ Scarica di nuovo il PDF",
             data=pdf_bytes,
             file_name=f"Report_Siger_{oggi.strftime('%Y%m%d')}.pdf",
             mime="application/pdf",
@@ -152,11 +157,12 @@ if col_settimana.button("📅 Genera report settimanale"):
             dataset_sett, inizio_settimana, oggi, siger_username, totale_precedente
         )
         st.success(f"✅ Report settimanale generato: {len(dataset_sett)} eventi.")
-        mostra_pdf(pdf_bytes_sett)
+        nome_file_sett = f"Report_Siger_settimanale_{inizio_settimana.strftime('%Y%m%d')}_{oggi.strftime('%Y%m%d')}.pdf"
+        scarica_automaticamente(pdf_bytes_sett, nome_file_sett)
         st.download_button(
-            label="⬇️ Scarica il PDF settimanale",
+            label="⬇️ Scarica di nuovo il PDF settimanale",
             data=pdf_bytes_sett,
-            file_name=f"Report_Siger_settimanale_{inizio_settimana.strftime('%Y%m%d')}_{oggi.strftime('%Y%m%d')}.pdf",
+            file_name=nome_file_sett,
             mime="application/pdf",
         )
         if invia_telegram:
