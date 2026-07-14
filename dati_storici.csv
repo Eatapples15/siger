@@ -1,0 +1,89 @@
+id_evento,comune,provincia,contesto,tipologia,data_inizio,data_fine,lat,lon,mezzi_elenco,numero_mezzi_sistema,cronologia,possibile_falso_allarme
+17341,Rapolla,PZ,Melfi,Incendio non boschivo,2026-07-07 10:36:00,2026-07-07 14:40:00,,,[],,[],False
+17342,Rionero in Vulture,PZ,Rionero in Vulture,Incendio non boschivo,2026-07-07 11:52:00,2026-07-07 13:16:00,,,[],,[],False
+17343,Rionero in Vulture,PZ,Rionero in Vulture,Incendio non boschivo,2026-07-07 13:24:00,2026-07-07 13:58:00,,,[],,[],False
+17344,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-07 15:14:00,2026-07-07 19:33:00,,,[],,[],False
+17345,Brienza,PZ,Marsicovetere,Incendio non boschivo,2026-07-07 15:36:00,2026-07-07 18:42:00,,,[],,[],False
+17346,Rapolla,PZ,Melfi,Incendio non boschivo,2026-07-07 17:01:00,2026-07-07 18:46:00,,,[],,[],False
+17347,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-07 17:43:00,2026-07-07 18:41:00,,,[],,[],False
+17348,Montescaglioso,MT,Matera,Incendio non boschivo,2026-07-07 17:53:00,2026-07-07 20:35:00,,,[],,[],False
+17349,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-07 18:34:00,2026-07-07 19:16:00,,,[],,[],False
+17350,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-08 09:55:00,2026-07-08 11:50:00,,,[],,[],False
+17351,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-08 13:59:00,2026-07-08 17:58:00,,,[],,[],False
+17352,Venosa,PZ,Melfi,Incendio Boschivo,2026-07-08 14:05:00,2026-07-08 17:59:00,,,[],,[],False
+17353,Banzi,PZ,Melfi,Incendio non boschivo,2026-07-08 15:18:00,2026-07-08 18:10:00,,,[],,[],False
+17354,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-08 19:09:00,2026-07-08 20:18:00,,,[],,[],False
+17355,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-08 19:26:00,2026-07-09 08:20:00,,,[],,[],False
+17356,Irsina,MT,Matera,Incendio non boschivo,2026-07-08 19:56:00,2026-07-09 09:12:00,,,[],,[],False
+17357,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-08 20:42:00,2026-07-08 21:37:00,,,[],,[],False
+17358,Roccanova,PZ,Sant'Arcangelo,Incendio non boschivo,2026-07-09 09:21:00,2026-07-09 11:35:00,,,[],,[],False
+17359,Ripacandida,PZ,Melfi,Incendio non boschivo,2026-07-09 12:09:00,2026-07-09 14:19:00,,,[],,[],False
+17360,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-09 13:08:00,2026-07-09 16:10:00,,,[],,[],False
+17361,Pescopagano,PZ,Rionero in Vulture,Incendio Boschivo,2026-07-09 14:33:00,2026-07-10 15:55:00,,,[],,[],False
+17362,Maratea,PZ,Lauria,Incendio non boschivo,2026-07-09 14:32:00,2026-07-09 14:49:00,,,[],,[],False
+17363,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-09 14:51:00,2026-07-09 17:22:00,,,[],,[],False
+17364,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-09 16:30:00,2026-07-09 17:13:00,,,[],,[],False
+17365,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-09 17:51:00,2026-07-09 20:11:00,,,[],,[],False
+17366,Maratea,PZ,Lauria,Incendio non boschivo,2026-07-09 18:29:00,2026-07-09 21:46:00,,,[],,[],False
+17367,Melfi,PZ,Melfi,Incendio non boschivo,2026-07-09 19:48:00,2026-07-09 19:52:00,,,[],,[],False
+17368,Garaguso,MT,Grassano,Incendio Boschivo,2026-07-10 09:44:00,2026-07-10 20:13:00,,,[],,[],False
+17369,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-10 15:45:00,2026-07-10 17:25:00,,,[],,[],False
+17370,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-10 16:03:00,2026-07-10 19:22:00,,,[],,[],False
+17371,Lavello,PZ,Melfi,Incendio non boschivo,2026-07-10 16:15:00,2026-07-10 18:12:00,,,[],,[],False
+17372,Banzi,PZ,Melfi,Incendio non boschivo,2026-07-10 16:29:00,2026-07-10 18:36:00,,,[],,[],False
+17373,Rionero in Vulture,PZ,Rionero in Vulture,Incendio non boschivo,2026-07-10 17:43:00,2026-07-10 19:01:00,,,[],,[],False
+17374,Venosa,PZ,Melfi,Incendio non boschivo,2026-07-10 18:46:00,2026-07-10 19:33:00,,,[],,[],False
+17375,Melfi,PZ,Melfi,Incendio non boschivo,2026-07-10 19:16:00,2026-07-10 20:57:00,,,[],,[],False
+17376,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-11 07:35:00,2026-07-11 09:33:00,,,[],,[],False
+17377,Acerenza,PZ,Potenza,Incendio non boschivo,2026-07-11 08:20:00,2026-07-11 09:59:00,,,[],,[],False
+17378,Latronico,PZ,Lauria,Incendio non boschivo,2026-07-11 10:32:00,2026-07-11 13:30:00,,,[],,[],False
+17379,Melfi,PZ,Melfi,Incendio non boschivo,2026-07-11 11:15:00,2026-07-11 12:21:00,,,[],,[],False
+17380,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-11 13:05:00,2026-07-11 13:21:00,,,[],,[],False
+17381,Laurenzana,PZ,Potenza,Incendio Interfaccia,2026-07-11 14:09:00,2026-07-11 15:33:00,,,[],,[],False
+17382,Rionero in Vulture,PZ,Rionero in Vulture,Incendio Interfaccia,2026-07-11 16:04:00,2026-07-11 21:05:00,,,[],,[],False
+17383,Montalbano Jonico,MT,Policoro,Incendio Boschivo,2026-07-11 16:52:00,2026-07-13 11:32:00,,,[],,[],False
+17384,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-11 17:19:00,2026-07-11 18:12:00,,,[],,[],False
+17385,Palazzo San Gervasio,PZ,Melfi,Incendio non boschivo,2026-07-11 17:34:00,2026-07-11 20:50:00,,,[],,[],False
+17386,Potenza,PZ,Potenza,Incendio non boschivo,2026-07-11 17:56:00,2026-07-11 18:29:00,,,[],,[],False
+17387,Stigliano,MT,Stigliano,Incendio non boschivo,2026-07-11 18:07:00,2026-07-11 19:23:00,,,[],,[],False
+17388,Tursi,MT,Policoro,Incendio non boschivo,2026-07-11 18:15:00,2026-07-12 10:16:00,,,[],,[],False
+17389,Melfi,PZ,Melfi,Incendio non boschivo,2026-07-11 18:19:00,2026-07-11 20:39:00,,,[],,[],False
+17390,Montemilone,PZ,Melfi,Incendio non boschivo,2026-07-11 18:29:00,2026-07-11 20:49:00,,,[],,[],False
+17391,Craco,MT,Pisticci,Incendio non boschivo,2026-07-11 19:10:00,2026-07-11 19:55:00,,,[],,[],False
+17392,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-11 19:35:00,2026-07-12 08:13:00,,,[],,[],False
+17393,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-12 10:22:00,2026-07-12 11:31:00,,,[],,[],False
+17394,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-12 11:31:00,2026-07-12 17:29:00,,,[],,[],False
+17395,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-12 12:07:00,2026-07-12 13:31:00,,,[],,[],False
+17396,Tursi,MT,Policoro,Incendio non boschivo,2026-07-12 12:28:00,2026-07-12 12:57:00,,,[],,[],False
+17397,Matera,MT,Matera,Incendio non boschivo,2026-07-12 12:43:00,2026-07-12 13:19:00,,,[],,[],False
+17398,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-12 13:19:00,2026-07-12 14:58:00,,,[],,[],False
+17399,Roccanova,PZ,Sant'Arcangelo,Incendio non boschivo,2026-07-12 13:24:00,2026-07-13 08:29:00,,,[],,[],False
+17400,Senise,PZ,Senise,Incendio non boschivo,2026-07-12 15:00:00,2026-07-12 17:13:00,,,[],,[],False
+17401,Matera,MT,Matera,Incendio Interfaccia,2026-07-12 15:38:00,2026-07-12 18:29:00,,,[],,[],False
+17402,Vietri di Potenza,PZ,Tito,Incendio Interfaccia,2026-07-12 15:39:00,2026-07-12 19:01:00,,,[],,[],False
+17403,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-12 16:08:00,2026-07-12 18:25:00,,,[],,[],False
+17404,Pomarico,MT,Ferrandina,Incendio Boschivo,2026-07-12 18:05:00,2026-07-12 18:39:00,,,[],,[],False
+17405,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-13 08:29:00,2026-07-13 11:52:00,,,[],,[],False
+17406,Matera,MT,Matera,Incendio Interfaccia,2026-07-13 10:14:00,2026-07-13 15:55:00,,,[],,[],False
+17407,Nova Siri,MT,Policoro,Incendio non boschivo,2026-07-13 11:00:00,2026-07-13 12:18:00,,,[],,[],False
+17408,Stigliano,MT,Stigliano,Incendio non boschivo,2026-07-13 12:40:00,2026-07-13 14:57:00,,,[],,[],False
+17409,Acerenza,PZ,Potenza,Incendio non boschivo,2026-07-13 13:06:00,2026-07-13 13:27:00,,,[],,[],False
+17410,Lavello,PZ,Melfi,Incendio non boschivo,2026-07-13 16:05:00,2026-07-13 17:55:00,,,[],,[],False
+17411,Montalbano Jonico,MT,Policoro,Incendio Interfaccia,2026-07-13 16:11:00,2026-07-14 08:23:00,,,[],,[],False
+17412,Maratea,PZ,Lauria,Incendio Boschivo,2026-07-13 16:24:00,2026-07-14 11:34:00,,,[],,[],False
+17413,Craco,MT,Pisticci,Incendio non boschivo,2026-07-13 16:41:00,2026-07-14 08:21:00,,,[],,[],False
+17414,Rionero in Vulture,PZ,Rionero in Vulture,Incendio non boschivo,2026-07-13 18:59:00,2026-07-13 20:32:00,,,[],,[],False
+17415,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-13 18:50:00,2026-07-14 08:14:00,,,[],,[],False
+17416,Matera,MT,Matera,Incendio non boschivo,2026-07-13 19:19:00,2026-07-14 08:15:00,,,[],,[],False
+17417,Satriano di Lucania,PZ,Tito,Incendio non boschivo,2026-07-14 09:47:00,2026-07-14 11:10:00,,,[],,[],False
+17418,Montescaglioso,MT,Matera,Incendio non boschivo,2026-07-14 11:36:00,2026-07-14 13:10:00,,,[],,[],False
+17419,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-14 11:44:00,2026-07-14 13:14:00,,,[],,[],False
+17420,Montalbano Jonico,MT,Policoro,Incendio non boschivo,2026-07-14 11:45:00,2026-07-14 14:25:00,,,[],,[],False
+17421,Ripacandida,PZ,Melfi,Incendio non boschivo,2026-07-14 12:16:00,2026-07-14 13:59:00,,,[],,[],False
+17422,Lavello,PZ,Melfi,Incendio non boschivo,2026-07-14 12:25:00,2026-07-14 14:44:00,,,[],,[],False
+17423,Bernalda,MT,Pisticci,Incendio non boschivo,2026-07-14 12:42:00,2026-07-14 14:38:00,,,[],,[],False
+17424,Pisticci,MT,Pisticci,Falso Allarme,2026-07-14 14:20:00,2026-07-14 15:12:00,,,[],,[],True
+17425,Melfi,PZ,Melfi,Incendio non boschivo,2026-07-14 14:27:00,,,,[],,"[[""14:26"", ""i VVF in SOUP comunicano evento a Melfi in c/da Parasacco su segnalazione di Iaffaldano 3393869930.  Si reca sul posto la squadra dei VVF AIB di Melfi""], [""15:15"", ""VF SOUP comunica che l'evento e' in atto e brucia canneto""]]",False
+17426,Pisticci,MT,Pisticci,Incendio non boschivo,2026-07-14 14:42:00,,,,[],,[],False
+17427,Lavello,PZ,Melfi,Incendio Interfaccia,2026-07-14 15:17:00,,,,"[""ordinaria di Melfi""]",,"[[""15:16"", ""i VVF in SOUP comunicano evento a Lavello nei pressi del Canile, su segnalazione di Rancone Domenico 3331111158. Si reca sul posto la squadra dei VVF Ordinaria di Melfi.""], [""15:17"", ""la SOUP contatta il Sindaco per avvisarlo dell'evento.""], [""15:18"", ""la SOUP contatta il Gruppo Lucano di Lavello 3381639023 che comunica di dover formare a squadra. Appena possibile avvisa la SOUP.""], [""15:39"", ""il Gruppo Lucano di Lavello comunica che la squadra di Lavello non può andare, quindi a contattato il Gruppo Lucano di F\norenza per formare la squadra. \nUtente: MICHELE DANZI Elicottero : assente Aereo : assente Data Modifica: 14/07/2026 15:47:31 \nUtente Modifica: RICCARDO D'AMICO \nNote:""], [""15:39"", ""il Gruppo Lucano di Lavello comunica che la squadra di Lavello non può andare, quindi ha contattato il Gruppo Lucano di F\norenza per formare la squadra. ""]]",False
+17428,Lavello,PZ,Melfi,Incendio non boschivo,2026-07-14 15:19:00,,,,"[""ordinaria di Palazzo"", ""CdB di VENOSA""]",,"[[""15:15"", "": I VVF in SOUP segnalano un incendio di steppaglie lungo la statale in prossimita' del Cimiteroi, segnalante il Sign. COSTANTE MAURIZIO tel.3482953993. Si sta recando sul posto la squadra Ordinaria di Palazzo.  lA SOUP contatta il CDB VENOSA dichairando di recarsi sul posto dopo aver fatto rifornimento di gasolio al mezzo.\nUtente: MICHELE DANZI Elicottero : assente Aereo : assente Data Modifica: 14/07/2026 15:27:52 \nUtente Modifica: MICHELE DANZI \nNote:""], [""15:15"", "": I VVF in SOUP segnalano un incendio di steppaglie lungo la statale in prossimita' del Cimitero segnalante il Sign. COSTANTINO MAURIZIO tel.3482953993. Si sta recando sul posto la squadra Ordinaria di Palazzo.  lA SOUP contatta il CDB VENOSA dichairando di recarsi sul posto dopo aver fatto rifornimento di gasolio al mezzo.\nUtente: MICHELE DANZI\nUtente: MICHELE DANZI\nUtente: MICHELE DANZI\nUtente: MICHELE DANZI Elicottero : assente Aereo : assente Data Modifica: 14/07/2026 15:33:18 \nUtente Modifica: RICCARDO D'AMICO \nNote:""], [""15:15"", "": I VVF in SOUP segnalano un incendio di sterpaglie lungo la statale in prossimità del Cimitero segnalante il Sign. COSTANTINO MAURIZIO tel.3482953993. Si sta recando sul posto la squadra Ordinaria di Palazzo.  La SOUP contatta il CDB VENOSA dichiarando di recarsi sul posto dopo aver fatto rifornimento di gasolio al mezzo.""], [""15:17"", ""la SOUP contatta il Sindaco per avvisarlo dell'evento.""]]",False
