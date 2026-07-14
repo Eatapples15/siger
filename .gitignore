@@ -1,0 +1,10 @@
+.streamlit/secrets.toml
+.venv/
+venv/
+__pycache__/
+*.pyc
+debug_*.png
+comuni_coords_cache.json
+dati_storici.csv
+REPORTAIB - SALA CONTROLLO.xlsx
+image.png

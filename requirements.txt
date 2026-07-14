@@ -1,0 +1,7 @@
+streamlit
+playwright
+pandas
+plotly
+python-telegram-bot
+requests
+openpyxl
