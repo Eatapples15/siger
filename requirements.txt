@@ -5,3 +5,4 @@ plotly
 python-telegram-bot
 requests
 openpyxl
+anthropic

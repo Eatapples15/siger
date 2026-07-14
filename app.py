@@ -88,7 +88,9 @@ def _esegui_pipeline_live(inizio, fine):
     log_box = st.empty()
     with st.spinner("🤖 Automazione in corso... login, download ed elaborazione dati."):
         try:
-            for msg in siger_scraper.genera_dataset(siger_username, siger_password, inizio, fine):
+            for msg in siger_scraper.genera_dataset(
+                siger_username, siger_password, inizio, fine, secrets=dict(st.secrets),
+            ):
                 if isinstance(msg, str):
                     if msg.startswith("dataset:"):
                         continue
@@ -100,7 +102,7 @@ def _esegui_pipeline_live(inizio, fine):
             st.error(str(e))
             st.stop()
     if dataset is not None and not dataset.empty:
-        siger_storico.upsert_archivio(dataset)
+        siger_storico.upsert_archivio(dataset, secrets=dict(st.secrets))
     return dataset
 
 
@@ -146,7 +148,7 @@ if col_settimana.button("📅 Genera report settimanale"):
     else:
         # Confronto con la settimana precedente: preso dall'archivio storico locale (non
         # richiede una seconda query al portale) se già presente.
-        archivio = siger_storico.carica_archivio()
+        archivio = siger_storico.carica_archivio(dict(st.secrets))
         totale_precedente = None
         if not archivio.empty:
             inizio_prec = inizio_settimana - timedelta(days=7)

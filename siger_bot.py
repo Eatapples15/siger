@@ -48,14 +48,15 @@ def _chat_id_autorizzati_da_secrets(secrets: dict) -> set:
     return autorizzati
 
 
-def _genera_report_oggi_sync(username: str, password: str):
+def _genera_report_oggi_sync(secrets: dict):
     """Esegue la pipeline live (sincrona, Playwright) e restituisce (pdf_bytes, n_oggi,
     n_carryover). pdf_bytes è None se non ci sono eventi. Eseguita in un thread separato
     (vedi asyncio.to_thread sotto) per non bloccare il loop asincrono del bot."""
+    username, password = secrets["SIGER_USERNAME"], secrets["SIGER_PASSWORD"]
     oggi = datetime.now().date()
     dataset = None
     for msg in siger_scraper.genera_dataset(
-        username, password, oggi - timedelta(days=GIORNI_LOOKBACK_CARRYOVER), oggi
+        username, password, oggi - timedelta(days=GIORNI_LOOKBACK_CARRYOVER), oggi, secrets=secrets,
     ):
         if not isinstance(msg, str):
             dataset = msg
@@ -63,7 +64,7 @@ def _genera_report_oggi_sync(username: str, password: str):
     if dataset is None or dataset.empty:
         return None, 0, 0
 
-    siger_storico.upsert_archivio(dataset)
+    siger_storico.upsert_archivio(dataset, secrets=secrets)
     eventi_oggi = dataset[dataset["data_inizio"].dt.date == oggi]
     carryover = siger_parser.eventi_carryover(dataset, oggi)
     pdf_bytes = siger_report.genera_pdf_giornaliero(eventi_oggi, oggi, username, eventi_carryover=carryover)
@@ -86,9 +87,7 @@ async def comando_report(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     secrets = context.bot_data["secrets"]
     try:
-        pdf_bytes, n_oggi, n_carryover = await asyncio.to_thread(
-            _genera_report_oggi_sync, secrets["SIGER_USERNAME"], secrets["SIGER_PASSWORD"]
-        )
+        pdf_bytes, n_oggi, n_carryover = await asyncio.to_thread(_genera_report_oggi_sync, secrets)
     except RuntimeError as e:
         await update.message.reply_text(f"❌ Errore durante la generazione del report:\n{e}")
         return

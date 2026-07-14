@@ -295,18 +295,30 @@ def _tempo_risposta_minuti(data_inizio, cronologia):
     return None
 
 
-def costruisci_dataset_consolidato(df_eventi: pd.DataFrame, df_storico: pd.DataFrame) -> pd.DataFrame:
+def costruisci_dataset_consolidato(
+    df_eventi: pd.DataFrame, df_storico: pd.DataFrame, enrichment_fallback=None, archivio_lookup=None
+) -> pd.DataFrame:
     """Unisce i dati strutturati dell'evento (EVENTIDAA) con i dettagli estratti dal diario
     (STORICOEVENTI): coordinate, mezzi impiegati, cronologia e tempi derivati.
 
     Le note vengono aggregate su TUTTE le righe MODIFICA EVENTO/INSERIMENTO EVENTO di un
     evento, non solo sull'ultima: un dettaglio (es. le coordinate) spesso viene scritto in
     una nota iniziale e non ripetuto nei successivi aggiornamenti, quindi guardare solo
-    l'ultima nota lo perderebbe."""
+    l'ultima nota lo perderebbe.
+
+    Per ogni evento si tenta, in ordine (solo finché le coordinate mancano): 1) le regex su
+    df_storico (gratuito, istantaneo); 2) archivio_lookup, se fornito (id_evento -> dict di
+    campi già noti da un run precedente — gratuito, istantaneo: l'export live "Storico" del
+    portale non supporta un filtro data e restituisce solo le attività più recenti, quindi
+    per eventi non recentissimi le regex qui sopra spesso non trovano nulla anche se erano
+    già state estratte in un giorno precedente); 3) enrichment_fallback, se fornito (funzione
+    testo -> dict|None, tipicamente un LLM: vedi siger_llm.crea_fallback — ultima spiaggia,
+    unico tentativo con un costo). Questo modulo non fa mai accesso a rete/disco da sé:
+    archivio_lookup ed enrichment_fallback sono passati già pronti dal chiamante."""
     if df_eventi.empty:
         return df_eventi
 
-    dettagli_per_evento = {}
+    testo_per_evento = {}
     if not df_storico.empty:
         # Nessun filtro sul tipo di operazione: oltre a MODIFICA EVENTO/INSERIMENTO EVENTO
         # anche CHIUSURA EVENTO porta note narrative complete, e altri tipi (GESTIONE MEZZO,
@@ -314,8 +326,47 @@ def costruisci_dataset_consolidato(df_eventi: pd.DataFrame, df_storico: pd.DataF
         # inclusi — aggregare tutto è più robusto che dover elencare ogni tipo conosciuto.
         storico_ordinato = df_storico.sort_values("data_ora")
         for id_evento, gruppo in storico_ordinato.groupby("id_evento"):
-            testo_completo = "\n".join(gruppo["attivita"].fillna(""))
-            dettagli_per_evento[id_evento] = estrai_dettagli_diario(testo_completo)
+            testo_per_evento[id_evento] = "\n".join(gruppo["attivita"].fillna(""))
+
+    dettagli_per_evento = {}
+    # Si itera su TUTTI gli eventi del report, non solo su quelli con righe nello storico
+    # scaricato: un evento assente da df_storico (diario troppo vecchio per l'export live)
+    # deve comunque poter ricevere il testo vuoto e provare archivio_lookup/enrichment_fallback,
+    # non essere saltato del tutto.
+    for id_evento in df_eventi["id_evento"].unique():
+        testo_completo = testo_per_evento.get(id_evento, "")
+        dettagli = estrai_dettagli_diario(testo_completo)
+
+        if dettagli["lat"] is None and archivio_lookup is not None:
+            pregresso = archivio_lookup.get(id_evento)
+            if pregresso and pregresso.get("lat") is not None:
+                dettagli["lat"] = pregresso.get("lat")
+                dettagli["lon"] = pregresso.get("lon")
+                if not dettagli["mezzi"] and pregresso.get("mezzi_elenco"):
+                    dettagli["mezzi"] = pregresso["mezzi_elenco"]
+                if not dettagli["cronologia"] and pregresso.get("cronologia"):
+                    dettagli["cronologia"] = pregresso["cronologia"]
+                if dettagli["numero_mezzi_sistema"] is None and pregresso.get("numero_mezzi_sistema") is not None:
+                    dettagli["numero_mezzi_sistema"] = pregresso["numero_mezzi_sistema"]
+                dettagli["possibile_falso_allarme"] = (
+                    dettagli["possibile_falso_allarme"] or bool(pregresso.get("possibile_falso_allarme"))
+                )
+
+        # LLM solo quando né le regex né l'archivio hanno trovato le coordinate: è il caso
+        # che le regex gestiscono peggio (formati non ancora visti), mentre mezzi/cronologia
+        # sono già estratti in modo affidabile nella maggioranza dei casi.
+        if enrichment_fallback is not None and dettagli["lat"] is None:
+            extra = enrichment_fallback(testo_completo)
+            if extra:
+                if dettagli["lat"] is None:
+                    dettagli["lat"] = extra.get("lat")
+                    dettagli["lon"] = extra.get("lon")
+                if not dettagli["mezzi"] and extra.get("mezzi"):
+                    dettagli["mezzi"] = extra["mezzi"]
+                dettagli["possibile_falso_allarme"] = (
+                    dettagli["possibile_falso_allarme"] or extra.get("possibile_falso_allarme", False)
+                )
+        dettagli_per_evento[id_evento] = dettagli
 
     df = df_eventi.copy()
     df["lat"] = df["id_evento"].map(lambda i: dettagli_per_evento.get(i, {}).get("lat"))

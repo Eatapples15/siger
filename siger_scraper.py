@@ -12,8 +12,10 @@ from datetime import date, datetime
 
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, sync_playwright
 
+import siger_llm
 import siger_parser
 import siger_playwright
+import siger_storico
 
 URL_LOGIN = "https://siger.regione.basilicata.it/sau/views/contents/login/login.xhtml"
 URL_STORICO = "https://siger.regione.basilicata.it/sistemagestionerischi/views/contents/storico/index.xhtml"
@@ -173,14 +175,32 @@ def scarica_export_eventi(page: Page, start_date: date, end_date: date) -> bytes
 
 
 def scarica_export_storico(page: Page) -> bytes:
-    """Naviga su 'Reportistica > Storico' e scarica l'export XLS (registro attività)."""
+    """Naviga su 'Storico' e scarica l'export XLS (registro attività).
+
+    Il link XLS punta a un report lato server statico e senza parametri
+    (.../ws/reports?ReportName=StoricoEventi.rptdesign&ReportFormat=xls): non è legato
+    alla tabella a schermo, quindi cambiare pagina/righe-per-pagina/filtri nella UI non
+    ha alcun effetto sull'export, che restituisce sempre e solo le attività più recenti.
+    Non esiste quindi un modo, lato client, di richiedere un intervallo di date arbitrario:
+    è un limite del portale, non uno dei nostri selettori. Per questo la pipeline live
+    copre in modo affidabile solo l'attività recente (uso quotidiano: report di oggi) — i
+    periodi più lunghi vanno ricostruiti accumulando i dati di ogni run nell'archivio
+    locale persistente (siger_storico.py), non ri-scaricando lo storico di giorni passati."""
     page.goto(URL_STORICO, wait_until="networkidle")
     return _scarica_export_xls(page, "debug_export_storico_error.png")
 
 
-def genera_dataset(username: str, password: str, start_date: date, end_date: date):
+def genera_dataset(username: str, password: str, start_date: date, end_date: date, secrets: dict | None = None):
     """Generator: fa login una volta, scarica entrambi gli export e restituisce (via
-    'yield') messaggi di log e infine il DataFrame consolidato (chiave 'dataset:')."""
+    'yield') messaggi di log e infine il DataFrame consolidato (chiave 'dataset:').
+
+    secrets (opzionale, dict): se contiene ANTHROPIC_API_KEY abilita il fallback LLM per le
+    coordinate non trovate né dalle regex né dall'archivio storico (vedi siger_llm.py); se
+    contiene GITHUB_TOKEN/GITHUB_REPO/GITHUB_DATA_BRANCH abilita anche il recupero
+    dell'archivio storico da GitHub quando quello locale non è disponibile (vedi
+    siger_storico.py). Con secrets assente o incompleto l'estrazione resta solo regex e
+    l'archivio, se presente, resta solo locale — nessuna di queste funzionalità è richiesta
+    per il funzionamento base."""
     with sync_playwright() as p:
         browser = siger_playwright.lancia_chromium(p)
         context = browser.new_context(
@@ -198,7 +218,7 @@ def genera_dataset(username: str, password: str, start_date: date, end_date: dat
             yield "log: Download export eventi (Report per data)...\n"
             bytes_eventi = scarica_export_eventi(page, start_date, end_date)
 
-            yield "log: Download export storico (registro attività)...\n"
+            yield "log: Download export storico (registro attività, solo le più recenti)...\n"
             bytes_storico = scarica_export_storico(page)
 
             yield "log: Parsing ed elaborazione dati...\n"
@@ -212,7 +232,13 @@ def genera_dataset(username: str, password: str, start_date: date, end_date: dat
                     "applicato lato codice come controllo di sicurezza).\n"
                 )
             df_storico = siger_parser.parse_storico_export(io.BytesIO(bytes_storico))
-            dataset = siger_parser.costruisci_dataset_consolidato(df_eventi, df_storico)
+            archivio = siger_storico.carica_archivio(secrets)
+            archivio_lookup = archivio.set_index("id_evento").to_dict(orient="index") if not archivio.empty else {}
+            dataset = siger_parser.costruisci_dataset_consolidato(
+                df_eventi, df_storico,
+                enrichment_fallback=siger_llm.crea_fallback((secrets or {}).get("ANTHROPIC_API_KEY")),
+                archivio_lookup=archivio_lookup,
+            )
 
             yield "dataset:"
             yield dataset

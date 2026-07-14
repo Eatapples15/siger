@@ -79,7 +79,9 @@ if st.button("📥 Carica dati", type="primary"):
     dataset = None
     with st.spinner("🤖 Automazione in corso... login, download ed elaborazione dati."):
         try:
-            for msg in siger_scraper.genera_dataset(siger_username, siger_password, start_date, end_date):
+            for msg in siger_scraper.genera_dataset(
+                siger_username, siger_password, start_date, end_date, secrets=dict(st.secrets),
+            ):
                 if isinstance(msg, str):
                     if msg.startswith("dataset:"):
                         continue
@@ -91,7 +93,7 @@ if st.button("📥 Carica dati", type="primary"):
             st.error(str(e))
             st.stop()
     if dataset is not None and not dataset.empty:
-        siger_storico.upsert_archivio(dataset)
+        siger_storico.upsert_archivio(dataset, secrets=dict(st.secrets))
     st.session_state["dashboard_dataset"] = dataset
     st.session_state["dashboard_periodo"] = (start_date, end_date)
 

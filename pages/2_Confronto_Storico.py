@@ -37,10 +37,10 @@ with st.expander("Importa/aggiorna l'archivio storico da file Excel"):
     if file_excel is not None and st.button("Importa storico"):
         with st.spinner("Importazione in corso..."):
             nuovi = siger_storico.importa_storico_excel(file_excel)
-            archivio_aggiornato = siger_storico.upsert_archivio(nuovi)
+            archivio_aggiornato = siger_storico.upsert_archivio(nuovi, secrets=dict(st.secrets))
         st.success(f"Archivio aggiornato: {len(archivio_aggiornato)} eventi totali.")
 
-archivio = siger_storico.carica_archivio()
+archivio = siger_storico.carica_archivio(dict(st.secrets))
 if archivio.empty:
     st.info("Nessun dato storico in archivio. Importa il workbook Excel qui sopra per iniziare.")
     st.stop()
