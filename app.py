@@ -15,9 +15,14 @@ GIORNI_LOOKBACK_CARRYOVER = 7  # per intercettare incendi aperti nei giorni prec
 
 
 def mostra_pdf(pdf_bytes):
+    # <embed> invece di <iframe>: su Streamlit Community Cloud l'app gira già dentro un
+    # iframe della piattaforma, e un secondo iframe annidato per l'anteprima del PDF va in
+    # conflitto col suo sandboxing in alcuni browser (l'anteprima resta bianca). <embed> è
+    # pensato per contenuti di plugin come i PDF ed è più tollerante in questo scenario.
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+    pdf_display = f'<embed src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf">'
     st.markdown(pdf_display, unsafe_allow_html=True)
+    st.caption("Se l'anteprima sopra resta vuota, usa il pulsante di download qui sotto: il PDF è comunque pronto.")
 
 
 async def _invia_documento_telegram(bot_token, chat_id, pdf_bytes, filename, caption):
