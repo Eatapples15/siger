@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+import siger_confronto
 import siger_geocoding
 import siger_scraper
 import siger_storico
@@ -138,6 +139,121 @@ st.caption(
     "**Individuati cercando la frase 'falso allarme'/'falsa segnalazione' nel diario: nessun "
     "campo strutturato noto per questo dato, quindi il conteggio è indicativo e va verificato."
 )
+
+# --- Confronto con il 2025 ---
+st.markdown("## 📈 Stato campagna 2026 vs 2025")
+riquadro_confronto = st.container(border=True)
+with riquadro_confronto:
+    st.caption(
+        "A differenza del resto della pagina, questo confronto usa sempre l'intero archivio "
+        "storico (live + import Excel) sulla finestra 1/07 → oggi a pari data, non l'intervallo "
+        "scelto sopra."
+    )
+    archivio_confronto = siger_storico.carica_archivio(dict(st.secrets))
+    cf = siger_confronto.calcola_confronto(archivio_confronto, oggi)
+    if cf is None:
+        st.info("Archivio storico insufficiente per il confronto con l'anno precedente (serve almeno un evento nella stessa finestra 1/07 → oggi dell'anno scorso).")
+    else:
+        variazione = cf["variazione"]
+        etichetta_finestra = f"1/07–{oggi.strftime('%d/%m')}"
+        if variazione is None:
+            st.info(f"Zero eventi nel {cf['anno_precedente']} in questa finestra: variazione non calcolabile.")
+        elif variazione > 0:
+            st.warning(
+                f"🔺 **La campagna {cf['anno_corrente']} è al {variazione:+.1f}% rispetto allo stesso "
+                f"periodo del {cf['anno_precedente']}** ({etichetta_finestra}): {cf['tot_corr']} eventi "
+                f"contro {cf['tot_prec']}."
+            )
+        else:
+            st.success(
+                f"🔻 **La campagna {cf['anno_corrente']} è al {variazione:+.1f}% rispetto allo stesso "
+                f"periodo del {cf['anno_precedente']}** ({etichetta_finestra}): {cf['tot_corr']} eventi "
+                f"contro {cf['tot_prec']}."
+            )
+
+        col_cf1, col_cf2, col_cf3 = st.columns(3)
+        col_cf1.metric(f"Eventi {etichetta_finestra} {cf['anno_corrente']}", cf["tot_corr"])
+        col_cf2.metric(f"Eventi {etichetta_finestra} {cf['anno_precedente']}", cf["tot_prec"])
+        col_cf3.metric(
+            "Variazione", f"{variazione:+.1f}%" if variazione is not None else "n/d",
+            delta=f"{variazione:+.1f}%" if variazione is not None else None,
+            delta_color="inverse",  # meno incendi = buona notizia, quindi verde quando scende
+        )
+
+        fig_cum = px.line(
+            cf["df_cum"], x="giorno_campagna", y="eventi_cumulati", color="anno",
+            color_discrete_map={str(cf["anno_corrente"]): CATEGORICO[0], str(cf["anno_precedente"]): CATEGORICO[5]},
+        )
+        fig_cum.update_layout(
+            xaxis_title="Giorni dall'inizio campagna (1/07)", yaxis_title="Eventi cumulati", legend_title="",
+        )
+        st.plotly_chart(fig_cum, use_container_width=True)
+
+        col_focus1, col_focus2 = st.columns(2)
+        with col_focus1:
+            st.write("**Per tipologia**")
+            df_tip_cf, ordine_tip_cf = siger_confronto.confronto_categoria(
+                cf["arch_prec"], cf["arch_corr"], "tipologia", cf["anno_precedente"], cf["anno_corrente"],
+                ordine_fisso=siger_confronto.ORDINE_TIPOLOGIA,
+            )
+            fig_tip_cf = px.bar(
+                df_tip_cf, x="categoria", y="eventi", color="anno", barmode="group",
+                category_orders={"categoria": ordine_tip_cf},
+                color_discrete_map={str(cf["anno_corrente"]): CATEGORICO[0], str(cf["anno_precedente"]): CATEGORICO[5]},
+            )
+            fig_tip_cf.update_layout(xaxis_title="", yaxis_title="Eventi", legend_title="")
+            st.plotly_chart(fig_tip_cf, use_container_width=True)
+
+        with col_focus2:
+            st.write("**Per territorio**")
+            dimensione_cf = st.radio("Raggruppa per", ["Comune", "Contesto"], horizontal=True, key="dim_territorio_cf")
+            colonna_cf = "comune" if dimensione_cf == "Comune" else "contesto"
+            df_terr_cf, ordine_terr_cf = siger_confronto.confronto_categoria(
+                cf["arch_prec"], cf["arch_corr"], colonna_cf, cf["anno_precedente"], cf["anno_corrente"], top_n=12,
+            )
+            fig_terr_cf = px.bar(
+                df_terr_cf, x="eventi", y="categoria", color="anno", orientation="h", barmode="group",
+                category_orders={"categoria": ordine_terr_cf},
+                color_discrete_map={str(cf["anno_corrente"]): CATEGORICO[0], str(cf["anno_precedente"]): CATEGORICO[5]},
+            )
+            fig_terr_cf.update_layout(
+                xaxis_title="Eventi", yaxis_title="", legend_title="", height=max(300, 24 * len(ordine_terr_cf)),
+            )
+            st.plotly_chart(fig_terr_cf, use_container_width=True)
+
+        col_focus3, col_focus4 = st.columns(2)
+        with col_focus3:
+            st.write("**Per giorno della settimana**")
+            df_giorno_cf, ordine_giorno_cf = siger_confronto.confronto_categoria(
+                cf["arch_prec_orari"], cf["arch_corr_orari"], "giorno_settimana",
+                cf["anno_precedente"], cf["anno_corrente"], ordine_fisso=siger_confronto.ORDINE_GIORNI,
+            )
+            fig_giorno_cf = px.bar(
+                df_giorno_cf, x="categoria", y="eventi", color="anno", barmode="group",
+                category_orders={"categoria": ordine_giorno_cf},
+                color_discrete_map={str(cf["anno_corrente"]): CATEGORICO[0], str(cf["anno_precedente"]): CATEGORICO[5]},
+            )
+            fig_giorno_cf.update_layout(xaxis_title="", yaxis_title="Eventi", legend_title="")
+            st.plotly_chart(fig_giorno_cf, use_container_width=True)
+
+        with col_focus4:
+            st.write("**Per fascia oraria**")
+            df_fascia_cf, ordine_fascia_cf = siger_confronto.confronto_categoria(
+                cf["arch_prec_orari"], cf["arch_corr_orari"], "fascia",
+                cf["anno_precedente"], cf["anno_corrente"], ordine_fisso=siger_confronto.ORDINE_FASCIA,
+            )
+            fig_fascia_cf = px.bar(
+                df_fascia_cf, x="categoria", y="eventi", color="anno", barmode="group",
+                category_orders={"categoria": ordine_fascia_cf},
+                color_discrete_map={str(cf["anno_corrente"]): CATEGORICO[0], str(cf["anno_precedente"]): CATEGORICO[5]},
+            )
+            fig_fascia_cf.update_layout(xaxis_title="", yaxis_title="Eventi", legend_title="")
+            st.plotly_chart(fig_fascia_cf, use_container_width=True)
+        st.caption(
+            "Giorno/ora ricavati da data_inizio in archivio: per gli eventi importati da Excel "
+            "senza orario esplicito, l'ora può risultare 00:00 (mezzanotte) e sottostimare le "
+            "fasce diurne — da leggere con cautela per gli anni più vecchi."
+        )
 
 # --- Trend giornaliero ---
 st.subheader("Andamento giornaliero")
@@ -391,7 +507,14 @@ colonne_tabella = [
     "numero_mezzi", "numero_mezzi_sistema", "fuori_stagione_aib", "possibile_falso_allarme",
     "protratto_oltre_24h",
 ]
-st.dataframe(dataset[colonne_tabella].sort_values("data_inizio", ascending=False), use_container_width=True)
+st.dataframe(
+    dataset[colonne_tabella].sort_values("data_inizio", ascending=False),
+    use_container_width=True,
+    column_config={
+        "data_inizio": st.column_config.DatetimeColumn("data_inizio", format="DD/MM/YYYY HH:mm"),
+        "data_fine": st.column_config.DatetimeColumn("data_fine", format="DD/MM/YYYY HH:mm"),
+    },
+)
 
 export_df = dataset.drop(columns=["cronologia"]).copy()
 export_df["mezzi_elenco"] = export_df["mezzi_elenco"].apply(lambda m: "; ".join(m) if isinstance(m, list) else m)

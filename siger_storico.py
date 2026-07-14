@@ -25,6 +25,8 @@ import openpyxl
 import pandas as pd
 import requests
 
+import siger_parser
+
 _ARCHIVIO_PATH = Path(__file__).parent / "dati_storici.csv"
 _COLONNE_ARCHIVIO = ["id_evento", "comune", "provincia", "contesto", "tipologia", "data_inizio", "data_fine"]
 # Campi estratti dal diario evento (siger_parser.estrai_dettagli_diario) che l'export live
@@ -64,7 +66,7 @@ def importa_storico_excel(source) -> pd.DataFrame:
             "comune": row[7],
             "provincia": row[8],
             "contesto": row[11],
-            "tipologia": row[12],
+            "tipologia": siger_parser.normalizza_tipologia(row[12]),
             "data_inizio": _combina_data_ora(row[3], row[4]),
             "data_fine": _combina_data_ora(row[5], row[6]),
         })

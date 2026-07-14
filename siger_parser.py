@@ -15,6 +15,23 @@ _NS = "{urn:schemas-microsoft-com:office:spreadsheet}"
 _CONTESTI_PATH = Path(__file__).parent / "contesti_basilicata.csv"
 _FALSO_ALLARME_TIPOLOGIE = {"falso allarme"}
 
+# Casistica canonica per il campo Tipologia: il portale live e il workbook Excel storico
+# non concordano sempre sulle maiuscole (es. "Falso Allarme" vs "Falso allarme"), il che
+# altrimenti farebbe comparire la stessa tipologia come due categorie distinte nei grafici.
+TIPOLOGIE_CANONICHE = [
+    "Incendio Boschivo", "Incendio non boschivo", "Incendio Interfaccia",
+    "Altro Incendio", "Falso allarme", "Inserimento multiplo",
+]
+_TIPOLOGIE_CASEFOLD = {t.casefold(): t for t in TIPOLOGIE_CANONICHE}
+
+
+def normalizza_tipologia(valore):
+    """Riconduce valore alla casistica canonica (case-insensitive) se corrisponde a una
+    tipologia nota; altrimenti lo restituisce invariato (non forza valori non riconosciuti)."""
+    if valore is None or (isinstance(valore, float) and pd.isna(valore)):
+        return valore
+    return _TIPOLOGIE_CASEFOLD.get(str(valore).strip().casefold(), valore)
+
 _MESI_EN = {
     "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
     "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
@@ -144,7 +161,7 @@ def parse_eventi_export(source) -> pd.DataFrame:
             "data_fine": _parse_data_ora(r.get(5)),
             "stato": (r.get(6) or "").strip(),
             "livello": (r.get(7) or "").strip(),
-            "tipologia": (r.get(8) or "").strip(),
+            "tipologia": normalizza_tipologia((r.get(8) or "").strip()),
         })
 
     df = pd.DataFrame.from_records(records)
