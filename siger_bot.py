@@ -50,13 +50,19 @@ def _carica_secrets() -> dict:
 
 def _chat_id_autorizzati_da_secrets(secrets: dict) -> set:
     """Chat autorizzate a chiedere /report: TELEGRAM_CHAT_ID (una, storica) più l'eventuale
-    TELEGRAM_CHAT_IDS (elenco aggiuntivo, separato da virgole) per autorizzare altri account/
-    gruppi senza perdere quello già configurato."""
+    TELEGRAM_CHAT_IDS (elenco aggiuntivo) per autorizzare altri account/gruppi senza perdere
+    quello già configurato. TELEGRAM_CHAT_IDS è accettato sia come stringa separata da
+    virgole ("123,456") sia come lista TOML (["123", "456"]) — entrambe le sintassi sono
+    naturali da scrivere nei secrets, quindi si accettano entrambe invece di richiederne
+    una specifica in modo silenzioso."""
     autorizzati = set()
     if secrets.get("TELEGRAM_CHAT_ID"):
         autorizzati.add(str(secrets["TELEGRAM_CHAT_ID"]).strip())
-    for cid in str(secrets.get("TELEGRAM_CHAT_IDS", "")).split(","):
-        cid = cid.strip()
+
+    chat_ids_extra = secrets.get("TELEGRAM_CHAT_IDS", "")
+    grezzi = chat_ids_extra if isinstance(chat_ids_extra, list) else str(chat_ids_extra).split(",")
+    for cid in grezzi:
+        cid = str(cid).strip()
         if cid:
             autorizzati.add(cid)
     return autorizzati
