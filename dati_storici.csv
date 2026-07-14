@@ -1,0 +1,2 @@
+id_evento,comune,provincia,contesto,tipologia,data_inizio,data_fine,lat,lon,mezzi_elenco,numero_mezzi_sistema,cronologia,possibile_falso_allarme
+999999,TEST,PZ,TEST,Incendio Boschivo,2025-01-01,,40.0,16.0,"[""Mezzo di test""]",1,"[[""10:00"", ""evento di test""]]",False
