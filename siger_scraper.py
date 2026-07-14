@@ -177,11 +177,21 @@ def scarica_export_storico(page: Page) -> bytes:
     return _scarica_export_xls(page, "debug_export_storico_error.png")
 
 
+def _lancia_chromium(p):
+    """Prova prima il Chromium di sistema (installato via apt da packages.txt, il caso di
+    Streamlit Community Cloud), poi il Chromium gestito da Playwright (installato in locale
+    con 'playwright install chromium')."""
+    try:
+        return p.chromium.launch(headless=True, channel="chromium")
+    except Exception:
+        return p.chromium.launch(headless=True)
+
+
 def genera_dataset(username: str, password: str, start_date: date, end_date: date):
     """Generator: fa login una volta, scarica entrambi gli export e restituisce (via
     'yield') messaggi di log e infine il DataFrame consolidato (chiave 'dataset:')."""
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _lancia_chromium(p)
         context = browser.new_context(
             ignore_https_errors=True,
             accept_downloads=True,

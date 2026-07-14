@@ -84,11 +84,21 @@ def _tabella_carryover(df: pd.DataFrame, giorno: date) -> str:
     return f"<table>{intestazione}{''.join(righe)}</table>"
 
 
+def _lancia_chromium(p):
+    """Prova prima il Chromium di sistema (installato via apt da packages.txt, il caso di
+    Streamlit Community Cloud), poi il Chromium gestito da Playwright (installato in locale
+    con 'playwright install chromium')."""
+    try:
+        return p.chromium.launch(headless=True, channel="chromium")
+    except Exception:
+        return p.chromium.launch(headless=True)
+
+
 def _renderizza_pdf(html_pdf: str) -> bytes:
     """Converte HTML in PDF. Non richiede una sessione autenticata sul portale: apre un
     browser headless a parte, usato solo come motore di rendering."""
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _lancia_chromium(p)
         try:
             page = browser.new_page()
             page.set_content(html_pdf)
