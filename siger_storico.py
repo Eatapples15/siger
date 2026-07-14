@@ -110,14 +110,26 @@ def _prova_ripristino_da_github(secrets: dict) -> None:
     if config is None:
         return
     try:
+        headers = {"Authorization": f"token {config['token']}", "Accept": "application/vnd.github+json"}
         risposta = requests.get(
             f"https://api.github.com/repos/{config['repo']}/contents/{_NOME_FILE_GITHUB}",
-            params={"ref": config["branch"]},
-            headers={"Authorization": f"token {config['token']}", "Accept": "application/vnd.github+json"},
-            timeout=10,
+            params={"ref": config["branch"]}, headers=headers, timeout=10,
         )
-        if risposta.status_code == 200:
-            _ARCHIVIO_PATH.write_bytes(base64.b64decode(risposta.json()["content"]))
+        if risposta.status_code != 200:
+            return
+        dati = risposta.json()
+        contenuto_b64 = dati.get("content")
+        if not contenuto_b64:
+            # La Contents API di GitHub omette il contenuto (encoding "none", content vuoto,
+            # senza sollevare errore) per i file oltre ~1MB — il nostro archivio ci è già
+            # passato. La Git Data API (Blobs), usata qui come fallback, non ha questo limite.
+            blob = requests.get(
+                f"https://api.github.com/repos/{config['repo']}/git/blobs/{dati['sha']}",
+                headers=headers, timeout=30,
+            )
+            blob.raise_for_status()
+            contenuto_b64 = blob.json()["content"]
+        _ARCHIVIO_PATH.write_bytes(base64.b64decode(contenuto_b64))
     except Exception as e:
         logging.warning("Ripristino dell'archivio storico da GitHub fallito: %s", e)
 
@@ -156,7 +168,16 @@ def carica_archivio(secrets: dict | None = None) -> pd.DataFrame:
     if not _ARCHIVIO_PATH.exists():
         return pd.DataFrame(columns=_COLONNE_ARCHIVIO_COMPLETO)
 
-    df = pd.read_csv(_ARCHIVIO_PATH, parse_dates=["data_inizio", "data_fine"])
+    try:
+        df = pd.read_csv(_ARCHIVIO_PATH, parse_dates=["data_inizio", "data_fine"])
+    except (pd.errors.EmptyDataError, pd.errors.ParserError) as e:
+        # File locale vuoto/corrotto (es. un ripristino da GitHub fallito a metà): non deve
+        # mai far fallire la pipeline. Lo elimina (così una chiamata successiva nello stesso
+        # container ritenta il ripristino da GitHub invece di ritrovarlo corrotto ogni
+        # volta) e riparte da un archivio vuoto, che il prossimo upsert_archivio ricostruirà.
+        logging.warning("Archivio storico locale illeggibile (%s), lo elimino: %s", _ARCHIVIO_PATH, e)
+        _ARCHIVIO_PATH.unlink(missing_ok=True)
+        return pd.DataFrame(columns=_COLONNE_ARCHIVIO_COMPLETO)
     # reindex: retrocompatibile con CSV scritti dalla vecchia versione a 7 colonne (senza i
     # campi di arricchimento) — le colonne mancanti vengono aggiunte vuote.
     df = df.reindex(columns=_COLONNE_ARCHIVIO_COMPLETO)
