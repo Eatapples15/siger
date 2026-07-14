@@ -7,9 +7,10 @@ Due modi d'uso:
    fa partire il polling in un thread di background del processo Streamlit stesso — utile
    per Streamlit Community Cloud, dove non si può eseguire un secondo processo indipendente.
 
-Le credenziali vengono lette dallo stesso file .streamlit/secrets.toml usato da app.py,
-così non c'è una seconda copia delle stesse credenziali da tenere sincronizzata.
-"""
+Le credenziali: in uso standalone si leggono da .streamlit/secrets.toml (tomllib); incorporate
+in Streamlit si passano da app.py (già lette via st.secrets, l'unica fonte affidabile su
+Streamlit Community Cloud — lì i Secrets configurati sulla piattaforma non è garantito siano
+anche un file fisico in quel percorso al momento giusto)."""
 import asyncio
 import threading
 import tomllib
@@ -135,8 +136,7 @@ async def comando_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(_TESTO_GUIDA, parse_mode="Markdown")
 
 
-def _costruisci_app() -> Application:
-    secrets = _carica_secrets()
+def _costruisci_app(secrets: dict) -> Application:
     chat_id_autorizzati = _chat_id_autorizzati_da_secrets(secrets)
 
     app = Application.builder().token(secrets["TELEGRAM_BOT_TOKEN"]).build()
@@ -150,8 +150,9 @@ def _costruisci_app() -> Application:
 
 def main():
     """Avvio standalone: `python siger_bot.py`. Gestisce Ctrl+C normalmente perché gira
-    nel thread principale."""
-    app = _costruisci_app()
+    nel thread principale. Legge le credenziali dal file locale .streamlit/secrets.toml."""
+    secrets = _carica_secrets()
+    app = _costruisci_app(secrets)
     print(f"Bot avviato. Chat autorizzate a richiedere report: {app.bot_data['chat_id_autorizzati']}")
     app.run_polling()
 
@@ -161,10 +162,10 @@ _bot_thread = None
 _bot_errore = None
 
 
-def _esegui_polling_in_thread():
+def _esegui_polling_in_thread(secrets: dict):
     global _bot_errore
     try:
-        app = _costruisci_app()
+        app = _costruisci_app(secrets)
         print(f"[siger_bot] Avviato in background. Chat autorizzate: {app.bot_data['chat_id_autorizzati']}")
         # stop_signals=None: i signal handler (Ctrl+C, SIGTERM) si possono installare solo
         # nel thread principale del processo — qui siamo in un thread secondario.
@@ -174,16 +175,22 @@ def _esegui_polling_in_thread():
         print(f"[siger_bot] Errore, bot non avviato: {e}")
 
 
-def avvia_bot_in_background_una_volta():
+def avvia_bot_in_background_una_volta(secrets: dict):
     """Avvia il bot in un thread di background, una sola volta per processo. Sicura da
     chiamare ad ogni rerun di Streamlit (il guardiano è a livello di modulo: dato che
     Python importa un modulo una sola volta per processo, le chiamate successive nello
-    stesso processo la trovano già "vista" e non fanno nulla)."""
+    stesso processo la trovano già "vista" e non fanno nulla).
+
+    secrets: passato dal chiamante (app.py, via st.secrets) invece di essere riletto da file,
+    perché su Streamlit Community Cloud i Secrets configurati sulla piattaforma sono
+    affidabili solo tramite st.secrets."""
     global _bot_thread
     with _bot_lock:
         if _bot_thread is not None:
             return
-        _bot_thread = threading.Thread(target=_esegui_polling_in_thread, daemon=True, name="siger-telegram-bot")
+        _bot_thread = threading.Thread(
+            target=_esegui_polling_in_thread, args=(secrets,), daemon=True, name="siger-telegram-bot"
+        )
         _bot_thread.start()
 
 

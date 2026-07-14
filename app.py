@@ -13,15 +13,6 @@ import siger_storico
 
 GIORNI_LOOKBACK_CARRYOVER = 7  # per intercettare incendi aperti nei giorni precedenti e ancora in corso
 
-try:
-    # Fa partire il bot Telegram (/report) come thread di background di questo stesso
-    # processo: su Streamlit Community Cloud non si può eseguire un secondo processo
-    # indipendente (siger_bot.py standalone), quindi lo incorporiamo qui. Sicuro da
-    # richiamare ad ogni rerun di Streamlit: il guardiano è dentro siger_bot stesso.
-    siger_bot.avvia_bot_in_background_una_volta()
-except Exception as e:
-    st.sidebar.warning(f"Bot Telegram non avviato: {e}")
-
 
 def mostra_pdf(pdf_bytes):
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
@@ -68,6 +59,17 @@ except KeyError:
         ".streamlit/secrets.toml (chiavi SIGER_USERNAME / SIGER_PASSWORD)."
     )
     st.stop()
+
+try:
+    # Fa partire il bot Telegram (/report) come thread di background di questo stesso
+    # processo: su Streamlit Community Cloud non si può eseguire un secondo processo
+    # indipendente (siger_bot.py standalone), quindi lo incorporiamo qui. dict(st.secrets)
+    # perché su Streamlit Cloud è l'unica fonte affidabile per i Secrets configurati sulla
+    # piattaforma. Sicuro da richiamare ad ogni rerun: il guardiano è dentro siger_bot stesso.
+    siger_bot.avvia_bot_in_background_una_volta(dict(st.secrets))
+except Exception as e:
+    st.sidebar.warning(f"Bot Telegram non avviato: {e}")
+
 
 def _esegui_pipeline_live(inizio, fine):
     """Esegue login + estrazione con spinner e log a schermo, restituendo il dataset
