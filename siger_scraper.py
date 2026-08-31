@@ -18,7 +18,7 @@ import siger_playwright
 import siger_storico
 
 URL_LOGIN = "http://siger.regione.basilicata.it/sau/views/contents/login/login.xhtml"
-URL_STORICO = "https://siger.regione.basilicata.it/sistemagestionerischi/views/contents/storico/index.xhtml"
+URL_STORICO = "http://siger.regione.basilicata.it/sistemagestionerischi/views/contents/storico/index.xhtml"
 
 
 def login(page: Page, username: str, password: str):
