@@ -17,7 +17,7 @@ import siger_parser
 import siger_playwright
 import siger_storico
 
-URL_LOGIN = "https://siger.regione.basilicata.it/sau/views/contents/login/login.xhtml"
+URL_LOGIN = "http://siger.regione.basilicata.it/sau/views/contents/login/login.xhtml"
 URL_STORICO = "https://siger.regione.basilicata.it/sistemagestionerischi/views/contents/storico/index.xhtml"
 
 
